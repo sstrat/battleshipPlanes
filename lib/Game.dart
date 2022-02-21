@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:planes_battle/Piece.dart';
 import 'package:planes_battle/Plane.dart';
 import 'GameTable.dart';
+import 'EnemyTable.dart';
 import 'dart:math';
 import 'Plane.dart';
+import 'package:planes_battle/MyCell.dart';
 
 class GameRoute extends StatefulWidget {
   const GameRoute({Key? key}) : super(key: key);
@@ -16,6 +18,26 @@ class GameRoute extends StatefulWidget {
 
 class _MyHomePageState extends State<GameRoute> {
   final GlobalKey _cardKey = GlobalKey();
+
+  List<List<MyCell>> yourMatrix =
+      List.generate(11, (i) => List.generate(11, (j) => MyCell()));
+  List<List<MyCell>> enemyMatrix =
+      List.generate(11, (i) => List.generate(11, (j) => MyCell()));
+
+  List<List<int>> convertToIntMat(List<List<MyCell>> matrix) {
+    List<List<int>> result =
+        List.generate(11, (i) => List.generate(11, (j) => 0));
+    ;
+    for (int i = 0; i < matrix.length; i++) {
+      for (int j = 0; j < matrix[i].length; j++) {
+        result[i][j] = matrix[i][j].val;
+      }
+    }
+    return result;
+  }
+
+  GameTable table = GameTable();
+
   Size cardSize = Size(0, 0);
   @override
   void initState() {
@@ -35,15 +57,25 @@ class _MyHomePageState extends State<GameRoute> {
     });
   }
 
+  GameTable myTable = GameTable(
+    planeTable: List.generate(11, (i) => List.generate(11, (j) => MyCell())),
+  );
+
   Offset pointerOffset = Offset(0, 0);
   @override
   Widget build(BuildContext context) {
+    yourMatrix = myTable.planeTable;
+    enemyMatrix = myTable.planeTable;
+
     Size cellSize = Size(
         (2 * (cardSize.width - 20)) / 21, (2 * (cardSize.height - 20)) / 21);
 
-    GameTable table = GameTable(
-      key: _cardKey,
+    EnemyTable enemyTable = EnemyTable(
+      planeTable: myTable.planeTable,
     );
+
+    //List<List<int>> tableValues = table.planeTable;
+
     //print(table.size);
 
     return Scaffold(
@@ -60,9 +92,10 @@ class _MyHomePageState extends State<GameRoute> {
                 children: [
                   Padding(
                     padding: EdgeInsets.only(bottom: 10),
-                    child: GameTable(),
+                    child: GameTable(key: _cardKey, planeTable: yourMatrix),
                   ),
-                  table,
+                  //table,
+                  enemyTable,
                   Piece(
                     top1: true,
                     top2: true,
@@ -87,7 +120,13 @@ class _MyHomePageState extends State<GameRoute> {
                       onPointerHover: (PointerHoverEvent event) {
                         setState(() {
                           pointerOffset = event.localPosition;
+                          // yourTable = table.planeTable;
+                          //print(convertToIntMat(yourTable));
+                          print("ddddd");
                         });
+                      },
+                      onPointerCancel: (PointerCancelEvent event) {
+                        setState(() {});
                       },
                       child: Draggable<int>(
 
